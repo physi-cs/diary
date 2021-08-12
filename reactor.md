@@ -19,3 +19,23 @@ But how can you produce asynchronous code on the JVM? Java offers two models of 
  [see this item](https://projectreactor.io/docs/core/release/reference/#faq.chain)
 
  Unless specified, the topmost operator (the source) itself runs on the Thread in which the subscribe() call was made
+  
+  
+```
+   private Mono<ResponseResult> doTraceConsistentCheck(RequestParam contextParam, Map<String, Object> dbParam) {
+     System.out.println(Thread.currentThread().getName());
+     //SmartSession<ResponseResult> smartSession = this.<ResponseResult>buildSmartSession(contextParam);
+     //DaoSession daoSession = SessionFactory.openDaoSession(SessionConst.APPLY_READ_ONLY_MODE);
+     return Mono.just("a")
+             .flatMap(daoSession1->{
+                 Scheduler s = Schedulers.newParallel("parallel-scheduler", 4);
+                 Mono<String> mono1 = Mono.just("a"+Thread.currentThread().getName()).subscribeOn(s);
+                 Mono<String> mono2 = Mono.just("b"+Thread.currentThread().getName()).subscribeOn(s);
+                 Mono<String> mono3 = Mono.just("c"+Thread.currentThread().getName()).subscribeOn(s);
+                 Mono<String> mono4 = Mono.just("d"+Thread.currentThread().getName()).subscribeOn(s);
+                 return Mono.zip(mono1, mono2, mono3, mono4);
+             })
+             .map(tupleResult->ResponseParamUtils.Java.assembleJSONResponse(tupleResult, contextParam, HttpStatusCodes.OK));
+}
+```
+输出仍然在main线程，为什么
