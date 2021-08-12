@@ -6,14 +6,16 @@
 - 对Mono与Flux的map和flatMap类似于java Stream
   - Java 流通常是同步的，同时只能处理有限数据集。它们本质上是使用函数式进行集合迭代的一种手段。响应式流支持任何大小的数据集，包括无限数据集的异步处理。它们使实时处理数据成为了可能   
 
-```
+
 But how can you produce asynchronous code on the JVM? Java offers two models of asynchronous programming:
 
 - Callbacks: Asynchronous methods do not have a return value but take an extra callback parameter (a lambda or anonymous class) that gets called when the result is available. A well known example is Swing’s EventListener hierarchy.
 
 - Futures: Asynchronous methods immediately return a Future<T>. The asynchronous process computes a T value, but the Future object wraps access to it. The value is not immediately available, and the object can be polled until the value is available. For instance, an ExecutorService running Callable<T> tasks use Future objects.
-```  
-```  
+
+
  In Reactor, operators are the workstations in our assembly analogy. Each operator adds behavior to a Publisher and wraps the previous step’s Publisher into a new instance. 
-  所以flatMap和map返回的仍然是Publisher
-``` 
+  所以flatMap和map返回的仍然是Publisher，并且与之前的不是一个Publisher
+ [see this item](https://projectreactor.io/docs/core/release/reference/#faq.chain)
+
+ Unless specified, the topmost operator (the source) itself runs on the Thread in which the subscribe() call was made
